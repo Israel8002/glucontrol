@@ -96,7 +96,7 @@ src/
 
 ---
 
-## 🚀 Guía de Desarrollo e Instalación
+## 🚀 Guía de Desarrollo e Instalación``
 
 Sigue estos pasos para levantar el entorno localmente:
 
@@ -189,6 +189,4 @@ Este proyecto está bajo la Licencia de Desarrollo Interno / Privada. Consulte l
 
 ---
 *Desarrollado con ❤️ para mejorar la calidad de vida y el control clínico diario.*
-#   g l u c o n t r o l 
- 
- 
+#
