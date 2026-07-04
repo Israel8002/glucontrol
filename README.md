@@ -3,17 +3,6 @@
 > **Ecosistema Profesional de Monitoreo & Control de Diabetes**  
 > *Una solución empresarial de grado médico, de código abierto, sin conexión a internet (Offline-First) y multiplataforma (Web, PWA, Android, iOS).*
 
----
-
-[![React Version](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Capacitor](https://img.shields.io/badge/Capacitor-6.2-119EFF?style=for-the-badge&logo=capacitor&logoColor=white)](https://capacitorjs.com/)
-[![Database](https://img.shields.io/badge/Dexie.js-IndexedDB-blue?style=for-the-badge&logo=database&logoColor=white)](https://dexie.org/)
-[![License](https://img.shields.io/badge/Licencia-Proprietaria-red?style=for-the-badge)](LICENSE)
-
----
-
 ## 📋 Descripción General
 
 **GluControl** es una suite médica digital diseñada para simplificar y optimizar el seguimiento diario de la diabetes y la salud metabólica. Desarrollada con altos estándares de ingeniería de software, la aplicación ofrece a pacientes y profesionales de la salud un sistema unificado para el registro de glucosa, administración de insulina, control de presión arterial, nutrición, actividad física, peso corporal y planes de medicación.
@@ -200,5 +189,6 @@ Este proyecto está bajo la Licencia de Desarrollo Interno / Privada. Consulte l
 
 ---
 *Desarrollado con ❤️ para mejorar la calidad de vida y el control clínico diario.*
-#   g l u c o n t r o l  
+#   g l u c o n t r o l 
+ 
  
