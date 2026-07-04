@@ -1,0 +1,31 @@
+.loading { display: flex; align-items: center; justify-content: center; height: 100vh; }
+.container { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5) var(--space-4); padding-top: calc(var(--space-4) + var(--safe-top)); }
+.header { display: flex; align-items: center; justify-content: space-between; }
+.headerTitle { display: flex; align-items: center; gap: var(--space-3); }
+.headerTitle h1 { font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--color-text-primary); }
+.headerIcon { color: var(--color-danger); }
+.latestCard { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-6) !important; text-align: center; }
+.bpDisplay { display: flex; align-items: center; gap: var(--space-2); }
+.bpValues { display: flex; align-items: baseline; gap: var(--space-1); }
+.systolic { font-size: 3.5rem; font-weight: var(--font-extrabold); color: var(--color-danger); font-variant-numeric: tabular-nums; line-height: 1; }
+.bpSlash { font-size: var(--text-3xl); color: var(--color-text-muted); }
+.diastolic { font-size: 3rem; font-weight: var(--font-extrabold); color: var(--color-text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.bpUnit { font-size: var(--text-base); color: var(--color-text-muted); font-weight: var(--font-medium); align-self: flex-end; padding-bottom: 8px; }
+.bpMeta { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
+.pulse { font-size: var(--text-sm); color: var(--color-text-muted); }
+.bpDate { font-size: var(--text-xs); color: var(--color-text-disabled); }
+.chartCard { display: flex; flex-direction: column; gap: var(--space-3); }
+.chartTitle { font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.logList { display: flex; flex-direction: column; gap: var(--space-2); }
+.logCard { display: flex; align-items: center; justify-content: space-between; }
+.logInfo { display: flex; align-items: center; gap: var(--space-4); flex: 1; }
+.logBP { font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--color-text-primary); font-variant-numeric: tabular-nums; min-width: 80px; }
+.logCategory { display: block; font-size: var(--text-sm); color: var(--color-text-secondary); }
+.logMeta { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+.logRight { display: flex; align-items: center; gap: var(--space-2); }
+.logDot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.deleteBtn { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: transparent; border: none; border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer; transition: all var(--transition-fast); }
+.deleteBtn:hover { background: var(--color-danger-bg); color: var(--color-danger); }
+.form { display: flex; flex-direction: column; gap: var(--space-4); }
+.bpInputRow { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.formActions { display: flex; gap: var(--space-3); }

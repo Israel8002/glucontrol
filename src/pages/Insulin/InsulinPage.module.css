@@ -1,0 +1,29 @@
+.loading { display: flex; align-items: center; justify-content: center; height: 100vh; }
+.container { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5) var(--space-4); padding-top: calc(var(--space-4) + var(--safe-top)); }
+.header { display: flex; align-items: center; justify-content: space-between; }
+.headerTitle { display: flex; align-items: center; gap: var(--space-3); }
+.headerTitle h1 { font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--color-text-primary); }
+.headerIcon { color: var(--color-success); }
+.headerActions { display: flex; gap: var(--space-2); }
+.summaryCard { display: flex; gap: var(--space-6); }
+.summaryRow { display: flex; flex-direction: column; gap: 2px; }
+.summaryLabel { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.summaryValue { font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--color-success); }
+.section { display: flex; flex-direction: column; gap: var(--space-3); }
+.sectionTitle { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.typeList { display: flex; flex-direction: column; gap: var(--space-2); }
+.typeCard { display: flex; align-items: center; justify-content: space-between; }
+.typeInfo { display: flex; flex-direction: column; gap: 2px; }
+.typeName { font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.typeLabel { font-size: var(--text-xs); color: var(--color-text-muted); }
+.emptyText { font-size: var(--text-sm); color: var(--color-text-muted); text-align: center; padding: var(--space-6); }
+.logList { display: flex; flex-direction: column; gap: var(--space-2); }
+.logCard { display: flex; align-items: center; justify-content: space-between; }
+.logInfo { display: flex; align-items: center; gap: var(--space-4); flex: 1; }
+.logUnits { font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--color-success); font-variant-numeric: tabular-nums; min-width: 48px; }
+.logName { display: block; font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.logMeta { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+.deleteLogBtn { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: transparent; border: none; border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer; transition: all var(--transition-fast); }
+.deleteLogBtn:hover { background: var(--color-danger-bg); color: var(--color-danger); }
+.form { display: flex; flex-direction: column; gap: var(--space-4); }
+.formActions { display: flex; gap: var(--space-3); padding-top: var(--space-2); }

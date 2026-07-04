@@ -1,0 +1,128 @@
+.container { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5) var(--space-4); padding-top: calc(var(--space-4) + var(--safe-top)); }
+.header { display: flex; align-items: center; justify-content: space-between; }
+.headerTitle { display: flex; align-items: center; gap: var(--space-3); }
+.headerTitle h1 { font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--color-text-primary); }
+.headerIcon { color: var(--color-success); }
+.loading { display: flex; align-items: center; justify-content: center; padding: var(--space-16); }
+.empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); padding: var(--space-12); color: var(--color-text-muted); text-align: center; }
+.emptyIcon { opacity: 0.3; }
+
+/* Selector de período */
+.periodSelector {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.periodSelector::-webkit-scrollbar { display: none; }
+
+.periodBtn {
+  white-space: nowrap;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 36px;
+}
+
+.periodActive {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success);
+}
+
+/* KPI grid */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .kpiGrid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+  padding: var(--space-4) !important;
+}
+
+.kpiValue {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.kpiLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Stats grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Charts */
+.chartCard { display: flex; flex-direction: column; gap: var(--space-4); }
+.chartTitle { font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.chartWrapper { width: 100%; }
+
+/* Tooltip personalizado */
+.tooltip {
+  background: var(--color-bg-overlay);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+}
+.tooltipValue { font-size: var(--text-base); font-weight: var(--font-bold); color: var(--color-success); }
+.tooltipTime { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+/* TIR */
+.tirContainer { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
+.tirChart { flex-shrink: 0; }
+.tirLegend { display: flex; flex-direction: column; gap: var(--space-3); flex: 1; min-width: 140px; }
+.tirItem { display: flex; align-items: center; gap: var(--space-3); }
+.tirDot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.tirName { font-size: var(--text-xs); color: var(--color-text-muted); }
+.tirValue { font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--color-text-primary); }

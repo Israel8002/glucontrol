@@ -1,0 +1,37 @@
+.layout {
+  display: flex;
+  height: 100%;
+  min-height: 100dvh;
+  background: var(--color-bg-base);
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Espacio para bottom nav en móvil */
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding-bottom: 0;
+  }
+}
+
+.content {
+  min-height: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .content {
+    max-width: 800px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content {
+    max-width: 900px;
+  }
+}

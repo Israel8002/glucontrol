@@ -1,0 +1,355 @@
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-top));
+  min-height: 100%;
+  animation: fadeInUp 350ms ease-out;
+}
+
+/* ─── Header ─────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.date {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.greeting {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.notifBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.notifBtn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* ─── Tarjeta de glucosa ─────────────────────────────────────── */
+.glucoseCard {
+  cursor: pointer;
+}
+
+.glucoseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.glucoseLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+}
+
+.glucoseIcon {
+  color: var(--color-success);
+}
+
+.glucoseTime {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.glucoseMain {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) 0;
+}
+
+.miniChart {
+  margin: var(--space-4) 0 var(--space-2);
+  height: 80px;
+}
+
+.glucoseFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.readingsCount {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Sin glucosa */
+.noGlucose {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.noGlucoseIcon {
+  color: var(--color-text-disabled);
+  opacity: 0.4;
+}
+
+.noGlucoseHint {
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+}
+
+/* ─── Secciones ──────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─── Acceso rápido ─────────────────────────────────────────── */
+.quickAccess {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .quickAccess {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.quickCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 80px;
+}
+
+.quickCard:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.quickCard:active {
+  transform: scale(0.96);
+}
+
+.quickIcon {
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+}
+
+.quickLabel {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ─── Summary cards ─────────────────────────────────────────── */
+.summaryCards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .summaryCards {
+    flex-direction: row;
+  }
+  
+  .summaryCard {
+    flex: 1;
+  }
+}
+
+.summaryCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  cursor: pointer;
+}
+
+.summaryIcon {
+  width: 44px;
+  height: 44px;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.summaryData {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.summaryValue {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.summaryDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Banner de instalación PWA */
+.pwaBanner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.05) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pwaBannerContent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.pwaIcon {
+  color: var(--color-success);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pwaTextWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pwaTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.pwaDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.pwaActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-2);
+}
+
+.pwaDismissBtn,
+.pwaInstallBtn {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 6px var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pwaDismissBtn {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.pwaDismissBtn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.pwaInstallBtn {
+  background: var(--color-success);
+  color: #ffffff;
+}
+
+.pwaInstallBtn:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+}
+
+.pwaInstallBtn:active {
+  transform: translateY(0);
+}
