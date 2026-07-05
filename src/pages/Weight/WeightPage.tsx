@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plus, Scale, Trash2 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 import { weightRepository } from '@/repositories/healthRepository';
@@ -23,6 +24,9 @@ import styles from './WeightPage.module.css';
 export const WeightPage: React.FC = () => {
   const { settings } = useSettingsStore();
   const { success, error: toastError } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
   
   const [logs, setLogs] = useState<WeightLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,10 +56,18 @@ export const WeightPage: React.FC = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await weightRepository.create({ weight, unit, heightCm });
+      await weightRepository.create({
+        weight,
+        unit,
+        heightCm,
+        logDate: dateParam || undefined,
+      });
       await load();
       setShowForm(false);
       success('Peso registrado');
+      if (dateParam) {
+        navigate(`/calendario?date=${dateParam}`);
+      }
     } catch { toastError('Error al guardar'); }
     finally { setIsSaving(false); }
   };

@@ -29,6 +29,61 @@ export interface CreateMedicationLogInput {
   skippedReason?: string;
 }
 
+async function syncMedicationReminders(med: Medication): Promise<void> {
+  try {
+    const allReminders = await db.reminders.toArray();
+    const existingReminders = allReminders.filter((r: any) => r.medicationId === med.id);
+    const alarmEnabled = !!(med as any).alarmEnabled;
+
+    if (!alarmEnabled || !med.isActive || med.isDeleted) {
+      for (const r of existingReminders) {
+        if (!r.isDeleted) {
+          await db.reminders.put(updateBaseRecord({ ...r, isDeleted: true }));
+        }
+      }
+      return;
+    }
+
+    const times = med.scheduledTimes || [];
+
+    for (const r of existingReminders) {
+      if (!times.includes(r.time)) {
+        if (!r.isDeleted) {
+          await db.reminders.put(updateBaseRecord({ ...r, isDeleted: true }));
+        }
+      }
+    }
+
+    for (const time of times) {
+      const existing = existingReminders.find(r => r.time === time);
+      const title = `Alarma: ${med.name} (${med.dosage})`;
+      if (existing) {
+        if (existing.isDeleted || existing.title !== title) {
+          await db.reminders.put(updateBaseRecord({
+            ...existing,
+            title,
+            isDeleted: false,
+          }));
+        }
+      } else {
+        const record = {
+          ...createBaseRecord(),
+          title,
+          type: 'medication' as any,
+          time,
+          repeatPattern: 'daily',
+          days: [1, 2, 3, 4, 5, 6, 0],
+          isActive: true,
+          medicationId: med.id,
+        };
+        await db.reminders.add(record);
+      }
+    }
+  } catch (error) {
+    log.error('Error syncing medication reminders', error);
+  }
+}
+
 export const medicationRepository = {
   // ─── MEDICAMENTOS ──────────────────────────────────────────────────────────
   
@@ -36,6 +91,7 @@ export const medicationRepository = {
     try {
       const record: Medication = { ...createBaseRecord(), ...input };
       await db.medications.add(record);
+      await syncMedicationReminders(record);
       log.info(`Medicamento creado: ${input.name}`);
       return record;
     } catch (error) {
@@ -66,6 +122,7 @@ export const medicationRepository = {
       if (!existing) throw new DatabaseError('Medicamento no encontrado');
       const updated = updateBaseRecord({ ...existing, ...changes });
       await db.medications.put(updated);
+      await syncMedicationReminders(updated);
       return updated;
     } catch (error) {
       log.error('Error al actualizar medicamento', error);
@@ -77,7 +134,9 @@ export const medicationRepository = {
     try {
       const existing = await db.medications.get(id);
       if (!existing) return;
-      await db.medications.put(updateBaseRecord({ ...existing, isDeleted: true, isActive: false }));
+      const updated = updateBaseRecord({ ...existing, isDeleted: true, isActive: false });
+      await db.medications.put(updated);
+      await syncMedicationReminders(updated);
     } catch (error) {
       log.error('Error al eliminar medicamento', error);
       throw new DatabaseError('No se pudo eliminar el medicamento', error);

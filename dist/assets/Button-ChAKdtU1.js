@@ -1,7 +1,0 @@
-import{c as n,j as s}from"./index-C8qSNmZ-.js";import{R as _}from"./react-vendor-B_9dtp_R.js";
-/**
- * @license lucide-react v0.427.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */const t=n("LoaderCircle",[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]]),l={btn:"_btn_1w31h_1","btn-primary":"_btn-primary_1w31h_41","btn-secondary":"_btn-secondary_1w31h_59","btn-ghost":"_btn-ghost_1w31h_71","btn-danger":"_btn-danger_1w31h_82","btn-success":"_btn-success_1w31h_95","btn-outline":"_btn-outline_1w31h_101","btn-sm":"_btn-sm_1w31h_113","btn-md":"_btn-md_1w31h_120","btn-lg":"_btn-lg_1w31h_125","btn-xl":"_btn-xl_1w31h_131",disabled:"_disabled_1w31h_139",fullWidth:"_fullWidth_1w31h_146",icon:"_icon_1w31h_151",label:"_label_1w31h_157",spinner:"_spinner_1w31h_162",spin:"_spin_1w31h_162"},a=_.forwardRef(({variant:n="primary",size:_="md",loading:a=!1,fullWidth:e=!1,leftIcon:i,rightIcon:r,children:b,disabled:d,className:h="",...c},o)=>{const m=d||a,w=[l.btn,l[`btn-${n}`],l[`btn-${_}`],e?l.fullWidth:"",m?l.disabled:"",h].filter(Boolean).join(" ");return s.jsxs("button",{ref:o,className:w,disabled:m,...c,children:[a?s.jsx(t,{className:l.spinner,size:"sm"===_?14:"lg"===_||"xl"===_?20:16}):i?s.jsx("span",{className:l.icon,children:i}):null,s.jsx("span",{className:l.label,children:b}),!a&&r&&s.jsx("span",{className:l.icon,children:r})]})});a.displayName="Button";export{a as B};

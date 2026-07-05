@@ -46,7 +46,19 @@ export const RemindersPage: React.FC = () => {
   
   const load = async () => {
     setIsLoading(true);
-    try { setReminders(await reminderRepository.getAll()); }
+    try {
+      const allReminders = await reminderRepository.getAll();
+      const sorted = [...allReminders].sort((a, b) => {
+        const titleA = a.title.toLowerCase();
+        const titleB = b.title.toLowerCase();
+        
+        if (titleA < titleB) return -1;
+        if (titleA > titleB) return 1;
+        
+        return a.time.localeCompare(b.time);
+      });
+      setReminders(sorted);
+    }
     catch { toastError('Error al cargar recordatorios'); }
     finally { setIsLoading(false); }
   };

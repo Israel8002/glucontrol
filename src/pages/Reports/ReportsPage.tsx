@@ -32,6 +32,10 @@ const MEDICATION_FREQUENCY_LABELS: Record<string, string> = {
   three: 'Tres veces al día',
   four: 'Cuatro veces al día',
   custom: 'Personalizado',
+  every_6h: 'Cada 6 horas',
+  every_8h: 'Cada 8 horas',
+  every_12h: 'Cada 12 horas',
+  every_24h: 'Cada 24 horas',
 };
 
 export const ReportsPage: React.FC = () => {

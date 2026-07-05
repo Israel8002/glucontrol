@@ -87,6 +87,8 @@ export interface InsulinTypeRecord extends BaseRecord {
   units: number;              // Dosis estándar del paciente
   color?: string;
   notes?: string;
+  defaultTime?: string;
+  defaultSite?: string;
 }
 
 /**

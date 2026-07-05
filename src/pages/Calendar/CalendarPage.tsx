@@ -3,8 +3,9 @@ import {
   CalendarDays, ChevronLeft, ChevronRight,
   Droplets, Pill, Syringe, Scale, Heart,
   Plus, Pencil, Trash2, X, ChevronRight as Chevron,
+  Check, Clock
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { glucoseRepository } from '@/repositories/glucoseRepository';
 import { medicationRepository } from '@/repositories/medicationRepository';
 import { insulinRepository } from '@/repositories/insulinRepository';
@@ -16,14 +17,15 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { formatGlucose, getStatusColor, getGlucoseStatusColor } from '@/utils/glucose';
-import { formatDisplayDate } from '@/utils/date';
+import { formatDisplayDate, today, nowTime } from '@/utils/date';
 import {
   format, addMonths, subMonths, startOfMonth, endOfMonth,
   eachDayOfInterval, getDay, isToday, isSameDay, isFuture,
+  parseISO,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
-import type { GlucoseReading, WeightLog, BloodPressureLog } from '@/entities';
-import { GLUCOSE_STATUS_LABELS, BLOOD_PRESSURE_CATEGORIES, BMI_CATEGORIES } from '@/core/constants';
+import type { GlucoseReading, WeightLog, BloodPressureLog, Medication, InsulinTypeRecord } from '@/entities';
+import { GLUCOSE_STATUS_LABELS, BLOOD_PRESSURE_CATEGORIES, BMI_CATEGORIES, INSULIN_TYPE_LABELS } from '@/core/constants';
 import styles from './CalendarPage.module.css';
 
 const DAYS_ES = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
@@ -41,7 +43,7 @@ interface DayDots {
 
 interface DayDetails {
   glucose: GlucoseReading[];
-  medications: Array<{ id: string; name: string; taken: boolean; time: string; dose?: string }>;
+  medications: Array<{ id: string; medicationId: string; name: string; taken: boolean; time: string; dose?: string }>;
   insulin: Array<{ id: string; units: number; time: string; typeName?: string }>;
   weight: WeightLog[];
   bloodPressure: BloodPressureLog[];
@@ -60,18 +62,47 @@ const REGISTER_MODULES = [
 
 export const CalendarPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
   const { settings } = useSettingsStore();
   const { success, error: toastError } = useToast();
 
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
+    if (dateParam) {
+      const parsed = parseISO(dateParam);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return new Date();
+  });
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    if (dateParam) {
+      const parsed = parseISO(dateParam);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return null;
+  });
   const [dotData, setDotData] = useState<Record<string, DayDots>>({});
   const [dayDetails, setDayDetails] = useState<DayDetails | null>(null);
+  const [activeMedications, setActiveMedications] = useState<Medication[]>([]);
+  const [activeInsulinTypes, setActiveInsulinTypes] = useState<InsulinTypeRecord[]>([]);
+  const [insulinUnits, setInsulinUnits] = useState<Record<string, number>>({});
+  const [insulinDoseTypes, setInsulinDoseTypes] = useState<Record<string, 'daily' | 'correction'>>({});
+  const [insulinTimes, setInsulinTimes] = useState<Record<string, string>>({});
   const [isLoadingMonth, setIsLoadingMonth] = useState(true);
   const [isLoadingDay, setIsLoadingDay] = useState(false);
   const [showModuleSelector, setShowModuleSelector] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ type: string; id: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (dateParam) {
+      const parsed = parseISO(dateParam);
+      if (!isNaN(parsed.getTime())) {
+        setSelectedDate(parsed);
+        setCurrentMonth(parsed);
+      }
+    }
+  }, [dateParam]);
 
   const unit = settings?.glucoseUnit ?? 'mg/dL';
 
@@ -112,29 +143,58 @@ export const CalendarPage: React.FC = () => {
     setIsLoadingDay(true);
     const dateStr = format(date, 'yyyy-MM-dd');
     try {
-      const [glucoseData, medLogs, insulinLogs, weightLogs, bpLogs] = await Promise.all([
+      const [glucoseData, medLogs, insulinLogs, weightLogs, bpLogs, activeMeds, activeInsulins] = await Promise.all([
         glucoseRepository.getByDate(dateStr),
         medicationRepository.getLogsByDate(dateStr),
         insulinRepository.getByDate(dateStr),
         weightRepository.getByDateRange(dateStr, dateStr),
         bloodPressureRepository.getByDateRange(dateStr, dateStr),
+        medicationRepository.getAllMedications(),
+        insulinRepository.getAllTypes(),
       ]);
+
+      setActiveMedications(activeMeds);
+      setActiveInsulinTypes(activeInsulins);
+      setInsulinUnits(prev => {
+        const next = { ...prev };
+        activeInsulins.forEach(t => {
+          if (next[t.id] === undefined) {
+            next[t.id] = t.units;
+          }
+        });
+        return next;
+      });
+      const initialDoseTypes: Record<string, 'daily' | 'correction'> = {};
+      const initialTimes: Record<string, string> = {};
+      activeInsulins.forEach(t => {
+        initialDoseTypes[t.id] = 'daily';
+        initialTimes[t.id] = t.defaultTime || '08:00';
+      });
+      setInsulinDoseTypes(initialDoseTypes);
+      setInsulinTimes(initialTimes);
 
       setDayDetails({
         glucose: glucoseData,
-        medications: medLogs.map(l => ({
-          id: l.id,
-          name: l.medicationName ?? '—',
-          taken: l.taken,
-          time: l.scheduledTime,
-          dose: l.dose != null ? String(l.dose) : undefined,
-        })),
-        insulin: insulinLogs.map(l => ({
-          id: l.id,
-          units: l.units,
-          time: l.logTime,
-          typeName: l.insulinTypeName,
-        })),
+        medications: medLogs.map(l => {
+          const med = activeMeds.find(m => m.id === l.medicationId);
+          return {
+            id: l.id,
+            medicationId: l.medicationId,
+            name: med?.name ?? l.medicationName ?? '—',
+            taken: l.taken,
+            time: l.scheduledTime,
+            dose: med?.dosage ?? (l.dose != null ? String(l.dose) : undefined),
+          };
+        }),
+        insulin: insulinLogs.map(l => {
+          const insulin = activeInsulins.find(i => i.id === l.insulinId);
+          return {
+            id: l.id,
+            units: l.units,
+            time: l.logTime,
+            typeName: insulin?.name ?? l.insulinTypeName,
+          };
+        }),
         weight: weightLogs,
         bloodPressure: bpLogs,
       });
@@ -143,6 +203,67 @@ export const CalendarPage: React.FC = () => {
 
   useEffect(() => { loadMonthData(currentMonth); }, [currentMonth, loadMonthData]);
   useEffect(() => { if (selectedDate) loadDayDetails(selectedDate); }, [selectedDate, loadDayDetails]);
+
+  // ─── Toggles e inserciones rápidas ───────────────────────────────────────
+
+  const handleTakeMedication = async (med: Medication, scheduledTime: string, taken: boolean) => {
+    if (!selectedDate) return;
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    try {
+      const existingLog = dayDetails?.medications.find(
+        l => l.medicationId === med.id && l.time === scheduledTime
+      );
+
+      if (existingLog) {
+        await medicationRepository.updateLog(existingLog.id, {
+          taken,
+          takenTime: taken ? new Date().toTimeString().slice(0, 5) : undefined,
+        });
+      } else {
+        await medicationRepository.createLog({
+          medicationId: med.id,
+          taken,
+          scheduledTime,
+          takenTime: taken ? new Date().toTimeString().slice(0, 5) : undefined,
+          logDate: dateStr,
+        });
+      }
+      success(`${med.name} marcado como ${taken ? 'tomado' : 'no tomado'}`);
+      await loadDayDetails(selectedDate);
+      await loadMonthData(currentMonth);
+    } catch {
+      toastError('Error al registrar toma de medicamento');
+    }
+  };
+
+  const handleLogInsulin = async (insulinType: InsulinTypeRecord, units: number, isCorrection: boolean, logTime: string) => {
+    if (!selectedDate) return;
+    try {
+      const logDate = format(selectedDate, 'yyyy-MM-dd');
+      await insulinRepository.createLog({
+        insulinId: insulinType.id,
+        units,
+        site: 'abdomen',
+        type: insulinType.type,
+        logDate,
+        logTime,
+        correctionDose: isCorrection
+      });
+      success(`Registrada dosis ${isCorrection ? 'correctiva ' : ''}de ${units} U de ${insulinType.name}`);
+      await loadDayDetails(selectedDate);
+      await loadMonthData(currentMonth);
+    } catch {
+      toastError('Error al registrar dosis de insulina');
+    }
+  };
+
+  const adjustUnits = (typeId: string, delta: number) => {
+    setInsulinUnits(prev => {
+      const current = prev[typeId] ?? 10;
+      const next = Math.max(0.5, current + delta);
+      return { ...prev, [typeId]: next };
+    });
+  };
 
   // ─── Eliminar registros ──────────────────────────────────────────────────
 
@@ -283,7 +404,7 @@ export const CalendarPage: React.FC = () => {
           {/* Contenido del panel */}
           {isLoadingDay ? (
             <div className={styles.dayLoading}><Spinner size="sm" /></div>
-          ) : dayDetails && hasAnyRecord(dayDetails) ? (
+          ) : dayDetails && hasAnyRecord(dayDetails, activeMedications, activeInsulinTypes) ? (
             <div className={styles.dayRecords}>
 
               {/* ── Glucosa ── */}
@@ -317,65 +438,223 @@ export const CalendarPage: React.FC = () => {
               )}
 
               {/* ── Insulina ── */}
-              {dayDetails.insulin.length > 0 && (
+              {(activeInsulinTypes.length > 0 || dayDetails.insulin.length > 0) && (
                 <div className={styles.recordSection}>
                   <div className={styles.recordSectionHeader}>
                     <Syringe size={15} style={{ color: '#8b5cf6' }} />
                     <span>Insulina</span>
-                    <span className={styles.recordCount}>{dayDetails.insulin.length}</span>
                   </div>
-                  {dayDetails.insulin.map(l => (
-                    <div key={l.id} className={styles.recordItem}>
-                      <div className={styles.recordLeft}>
-                        <span className={styles.recordTime}>{l.time}</span>
-                        <span className={styles.recordValue} style={{ color: '#8b5cf6' }}>{l.units} U</span>
-                        {l.typeName && <span className={styles.recordSub}>{l.typeName}</span>}
-                      </div>
-                      <div className={styles.recordBtns}>
-                        <button className={styles.deleteBtn} onClick={() => setDeleteTarget({ type: 'insulin', id: l.id })} aria-label="Eliminar">
-                          <Trash2 size={14} />
-                        </button>
+
+                  {/* Lista de insulina registrada */}
+                  {dayDetails.insulin.length > 0 && (
+                    <div className={styles.loggedInsulinList}>
+                      {dayDetails.insulin.map(l => (
+                        <div key={l.id} className={styles.recordItem}>
+                          <div className={styles.recordLeft}>
+                            <span className={styles.recordTime}>{l.time}</span>
+                            <span className={styles.recordValue} style={{ color: '#8b5cf6' }}>{l.units} U</span>
+                            {l.typeName && <span className={styles.recordSub}>{l.typeName}</span>}
+                          </div>
+                          <div className={styles.recordBtns}>
+                            <button className={styles.deleteBtn} onClick={() => setDeleteTarget({ type: 'insulin', id: l.id })} aria-label="Eliminar">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Panel de registro rápido para insulinas activas */}
+                  {activeInsulinTypes.length > 0 && (
+                    <div className={styles.insulinQuickLogSection}>
+                      <p className={styles.quickLogTitle}>Registrar dosis rápida:</p>
+                      <div className={styles.insulinQuickLogGrid}>
+                        {activeInsulinTypes.map(t => {
+                          const units = insulinUnits[t.id] ?? t.units;
+                          const isCorr = (insulinDoseTypes[t.id] ?? 'daily') === 'correction';
+                          const time = insulinTimes[t.id] ?? t.defaultTime ?? '08:00';
+                          return (
+                            <div key={t.id} className={styles.insulinQuickCard}>
+                              <div className={styles.insulinQuickCardHeader}>
+                                <div className={styles.insulinQuickInfo}>
+                                  <span className={styles.insulinQuickName}>{t.name}</span>
+                                  <span className={styles.insulinQuickType}>({INSULIN_TYPE_LABELS[t.type as keyof typeof INSULIN_TYPE_LABELS] ?? t.type})</span>
+                                </div>
+                                <div className={styles.insulinAdjuster}>
+                                  <button
+                                    type="button"
+                                    className={styles.adjustBtn}
+                                    onClick={() => adjustUnits(t.id, -0.5)}
+                                    disabled={units <= 0.5}
+                                  >
+                                    -
+                                  </button>
+                                  <span className={styles.unitsValue}>{units} U</span>
+                                  <button
+                                    type="button"
+                                    className={styles.adjustBtn}
+                                    onClick={() => adjustUnits(t.id, 0.5)}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  className={styles.quickLogBtn}
+                                  onClick={() => handleLogInsulin(t, units, isCorr, time)}
+                                >
+                                  Registrar
+                                </button>
+                              </div>
+
+                              <div className={styles.insulinQuickCardBody}>
+                                <div className={styles.doseTypeSelector}>
+                                  <label className={styles.doseTypeOption}>
+                                    <input
+                                      type="radio"
+                                      name={`dose-type-${t.id}`}
+                                      value="daily"
+                                      checked={!isCorr}
+                                      onChange={() => {
+                                        setInsulinDoseTypes(prev => ({ ...prev, [t.id]: 'daily' }));
+                                        setInsulinTimes(prev => ({ ...prev, [t.id]: t.defaultTime || '08:00' }));
+                                      }}
+                                    />
+                                    <span>Dosis del día</span>
+                                  </label>
+                                  <label className={styles.doseTypeOption}>
+                                    <input
+                                      type="radio"
+                                      name={`dose-type-${t.id}`}
+                                      value="correction"
+                                      checked={isCorr}
+                                      onChange={() => {
+                                        setInsulinDoseTypes(prev => ({ ...prev, [t.id]: 'correction' }));
+                                        setInsulinTimes(prev => ({ ...prev, [t.id]: nowTime() }));
+                                      }}
+                                    />
+                                    <span>Dosis correctiva</span>
+                                  </label>
+                                </div>
+                                <div className={styles.insulinTimeInputWrapper}>
+                                  <span className={styles.timeInputLabel}>Hora:</span>
+                                  <input
+                                    type="time"
+                                    className={styles.timeInput}
+                                    value={time}
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      setInsulinTimes(prev => ({ ...prev, [t.id]: val }));
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
 
               {/* ── Medicamentos ── */}
-              {dayDetails.medications.length > 0 && (
+              {(activeMedications.length > 0 || dayDetails.medications.length > 0) && (
                 <div className={styles.recordSection}>
                   <div className={styles.recordSectionHeader}>
                     <Pill size={15} style={{ color: '#3b82f6' }} />
                     <span>Medicamentos</span>
-                    <span className={styles.recordCount}>{dayDetails.medications.length}</span>
                   </div>
-                  {dayDetails.medications.map(m => (
-                    <div key={m.id} className={styles.recordItem}>
-                      <div className={styles.recordLeft}>
-                        <span className={styles.recordTime}>{m.time}</span>
-                        <span className={styles.recordValue} style={{ color: m.taken ? '#22c55e' : '#ef4444' }}>
-                          {m.taken ? '✓ Tomado' : '✗ No tomado'}
-                        </span>
-                        <span className={styles.recordSub}>{m.name}{m.dose ? ` · ${m.dose}` : ''}</span>
-                      </div>
-                      <div className={styles.recordBtns}>
-                        <button className={styles.deleteBtn} onClick={() => setDeleteTarget({ type: 'medication', id: m.id })} aria-label="Eliminar">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+
+                  {activeMedications.length > 0 ? (
+                    <div className={styles.medList}>
+                      {activeMedications.map(med => {
+                        const medLogs = dayDetails.medications.filter(
+                          l => l.medicationId === med.id
+                        );
+
+                        return (
+                          <div key={med.id} className={styles.medCardCompact}>
+                            <div className={styles.medHeaderCompact}>
+                              <div className={styles.medInfoCompact}>
+                                <div
+                                  className={styles.medColorDotCompact}
+                                  style={{ background: med.color ?? '#3b82f6' }}
+                                />
+                                <div>
+                                  <h4 className={styles.medNameCompact}>{med.name}</h4>
+                                  <span className={styles.medDetailsTextCompact}>
+                                    {med.dosage} · {med.form}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className={styles.doseListCompact}>
+                              {med.scheduledTimes.map(time => {
+                                const log = medLogs.find(l => l.time === time);
+                                const taken = log?.taken ?? false;
+
+                                return (
+                                  <button
+                                    key={time}
+                                    className={`${styles.doseBtnCompact} ${taken ? styles.doseTakenCompact : ''}`}
+                                    onClick={() => handleTakeMedication(med, time, !taken)}
+                                    aria-label={`${taken ? 'Desmarcar' : 'Marcar'} dosis de ${time}`}
+                                  >
+                                    {taken ? <Check size={14} /> : <Clock size={14} />}
+                                    <span>{time}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
+                  ) : null}
+
+                  {/* Tomas de medicamentos inactivos/históricos */}
+                  {(() => {
+                    const inactiveLogs = dayDetails.medications.filter(
+                      l => !activeMedications.some(med => med.id === l.medicationId)
+                    );
+                    if (inactiveLogs.length === 0) return null;
+
+                    return (
+                      <div className={styles.inactiveLogsSection}>
+                        <p className={styles.inactiveLogsTitle}>Otros registros de tomas:</p>
+                        {inactiveLogs.map(m => (
+                          <div key={m.id} className={styles.recordItem}>
+                            <div className={styles.recordLeft}>
+                              <span className={styles.recordTime}>{m.time}</span>
+                              <span className={styles.recordValue} style={{ color: m.taken ? '#22c55e' : '#ef4444' }}>
+                                {m.taken ? '✓ Tomado' : '✗ No tomado'}
+                              </span>
+                              <span className={styles.recordSub}>{m.name}{m.dose ? ` · ${m.dose}` : ''} (Inactivo)</span>
+                            </div>
+                            <div className={styles.recordBtns}>
+                              <button className={styles.deleteBtn} onClick={() => setDeleteTarget({ type: 'medication', id: m.id })} aria-label="Eliminar">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
               {/* ── Peso ── */}
-              {dayDetails.weight.length > 0 && (
-                <div className={styles.recordSection}>
-                  <div className={styles.recordSectionHeader}>
-                    <Scale size={15} style={{ color: '#f59e0b' }} />
-                    <span>Peso</span>
-                  </div>
-                  {dayDetails.weight.map(w => (
+              <div className={styles.recordSection}>
+                <div className={styles.recordSectionHeader}>
+                  <Scale size={15} style={{ color: '#f59e0b' }} />
+                  <span>Peso</span>
+                </div>
+                {dayDetails.weight.length > 0 ? (
+                  dayDetails.weight.map(w => (
                     <div key={w.id} className={styles.recordItem}>
                       <div className={styles.recordLeft}>
                         <span className={styles.recordValue} style={{ color: '#f59e0b' }}>
@@ -389,19 +668,28 @@ export const CalendarPage: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <button
+                    className={styles.quickAddBtn}
+                    onClick={() => navigate(`/peso?date=${format(selectedDate, 'yyyy-MM-dd')}`)}
+                  >
+                    + Registrar peso
+                  </button>
+                )}
+              </div>
 
               {/* ── Presión arterial ── */}
-              {dayDetails.bloodPressure.length > 0 && (
-                <div className={styles.recordSection}>
-                  <div className={styles.recordSectionHeader}>
-                    <Heart size={15} style={{ color: '#ef4444' }} />
-                    <span>Presión arterial</span>
+              <div className={styles.recordSection}>
+                <div className={styles.recordSectionHeader}>
+                  <Heart size={15} style={{ color: '#ef4444' }} />
+                  <span>Presión arterial</span>
+                  {dayDetails.bloodPressure.length > 0 && (
                     <span className={styles.recordCount}>{dayDetails.bloodPressure.length}</span>
-                  </div>
-                  {dayDetails.bloodPressure.map(b => (
+                  )}
+                </div>
+                {dayDetails.bloodPressure.length > 0 ? (
+                  dayDetails.bloodPressure.map(b => (
                     <div key={b.id} className={styles.recordItem}>
                       <div className={styles.recordLeft}>
                         <span className={styles.recordTime}>{b.logTime}</span>
@@ -416,9 +704,16 @@ export const CalendarPage: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <button
+                    className={styles.quickAddBtn}
+                    onClick={() => navigate(`/presion?date=${format(selectedDate, 'yyyy-MM-dd')}`)}
+                  >
+                    + Registrar presión arterial
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             /* Sin registros ese día */
@@ -488,6 +783,6 @@ export const CalendarPage: React.FC = () => {
 
 // ─── Helper ──────────────────────────────────────────────────────────────────────
 
-function hasAnyRecord(d: DayDetails): boolean {
-  return d.glucose.length > 0 || d.insulin.length > 0 || d.medications.length > 0 || d.weight.length > 0 || d.bloodPressure.length > 0;
+function hasAnyRecord(d: DayDetails, activeMeds: Medication[], activeInsulins: InsulinTypeRecord[]): boolean {
+  return d.glucose.length > 0 || d.insulin.length > 0 || d.medications.length > 0 || d.weight.length > 0 || d.bloodPressure.length > 0 || activeMeds.length > 0 || activeInsulins.length > 0;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plus, Heart, Trash2 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 import { bloodPressureRepository } from '@/repositories/healthRepository';
@@ -24,6 +25,10 @@ const POSITION_OPTIONS = [{ value: 'sitting', label: 'Sentado' }, { value: 'stan
 
 export const BloodPressurePage: React.FC = () => {
   const { success, error: toastError } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
+  
   const [logs, setLogs] = useState<BloodPressureLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -48,10 +53,21 @@ export const BloodPressurePage: React.FC = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await bloodPressureRepository.create({ systolic, diastolic, pulse, arm, position, logTime });
+      await bloodPressureRepository.create({
+        systolic,
+        diastolic,
+        pulse,
+        arm,
+        position,
+        logTime,
+        logDate: dateParam || undefined,
+      });
       await load();
       setShowForm(false);
       success(`Presión registrada: ${systolic}/${diastolic}`);
+      if (dateParam) {
+        navigate(`/calendario?date=${dateParam}`);
+      }
     } catch { toastError('Error al guardar'); }
     finally { setIsSaving(false); }
   };

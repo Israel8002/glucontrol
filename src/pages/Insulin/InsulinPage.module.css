@@ -27,3 +27,15 @@
 .deleteLogBtn:hover { background: var(--color-danger-bg); color: var(--color-danger); }
 .form { display: flex; flex-direction: column; gap: var(--space-4); }
 .formActions { display: flex; gap: var(--space-3); padding-top: var(--space-2); }
+
+.actionBtn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  background: transparent; border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted); cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+.actionBtnDanger:hover { background: var(--color-danger-bg); color: var(--color-danger); }

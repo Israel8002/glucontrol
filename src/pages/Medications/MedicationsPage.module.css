@@ -34,7 +34,7 @@
 
 .medMeta { display: flex; align-items: center; gap: var(--space-2); }
 
-.deleteBtn {
+.deleteBtn, .editBtn {
   display: flex; align-items: center; justify-content: center;
   width: 32px; height: 32px;
   background: transparent; border: none;
@@ -44,6 +44,7 @@
 }
 
 .deleteBtn:hover { background: var(--color-danger-bg); color: var(--color-danger); }
+.editBtn:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
 
 .medDetails { font-size: var(--text-sm); color: var(--color-text-muted); }
 
@@ -98,4 +99,57 @@
 .logMeta { font-size: var(--text-xs); color: var(--color-text-muted); }
 .logDeleteBtn { background: transparent; border: none; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--radius-md); transition: all var(--transition-fast); }
 .logDeleteBtn:hover { background: var(--color-danger-bg); color: var(--color-danger); }
+
+.timeSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.timeLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+}
+
+.timeInputsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.timeInputRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.timeInputRow > div {
+  flex: 1;
+}
+
+.timeRemoveBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.timeRemoveBtn:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+}
+
+.addTimeBtn {
+  margin-top: var(--space-1);
+  align-self: flex-start;
+}
 

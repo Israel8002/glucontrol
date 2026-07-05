@@ -219,49 +219,53 @@ export const Dashboard: React.FC = () => {
       {/* Accesos rápidos a otros módulos */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Acceso rápido</h2>
-        <div className={styles.quickAccess}>
-          <QuickActionCard
-            icon={<Pill size={22} />}
-            label="Medicamentos"
-            onClick={() => navigate('/medicamentos')}
-            id="quick-medications"
-          />
-          <QuickActionCard
-            icon={<Syringe size={22} />}
-            label="Insulina"
-            onClick={() => navigate('/insulina')}
-            id="quick-insulin"
-          />
-          <QuickActionCard
-            icon={<Scale size={22} />}
-            label="Peso"
-            onClick={() => navigate('/peso')}
-            id="quick-weight"
-          />
-          <QuickActionCard
-            icon={<Heart size={22} />}
-            label="Presión"
-            onClick={() => navigate('/presion')}
-            id="quick-bp"
-          />
-          <QuickActionCard
-            icon={<TrendingUp size={22} />}
-            label="Estadísticas"
-            onClick={() => navigate('/estadisticas')}
-            id="quick-stats"
-          />
-          <QuickActionCard
-            icon={<CalendarDays size={22} />}
-            label="Calendario"
-            onClick={() => navigate('/calendario')}
-            id="quick-calendar"
-          />
-          <QuickActionCard
-            icon={<FileText size={22} />}
-            label="Reportes"
-            onClick={() => navigate('/reportes')}
-            id="quick-reports"
-          />
+        <div className={styles.quickAccessContainer}>
+          <div className={styles.quickAccessRow}>
+            <QuickActionCard
+              icon={<Pill size={22} />}
+              label="Medicamentos"
+              onClick={() => navigate('/medicamentos')}
+              id="quick-medications"
+            />
+            <QuickActionCard
+              icon={<Syringe size={22} />}
+              label="Insulina"
+              onClick={() => navigate('/insulina')}
+              id="quick-insulin"
+            />
+            <QuickActionCard
+              icon={<Scale size={22} />}
+              label="Peso"
+              onClick={() => navigate('/peso')}
+              id="quick-weight"
+            />
+            <QuickActionCard
+              icon={<Heart size={22} />}
+              label="Presión"
+              onClick={() => navigate('/presion')}
+              id="quick-bp"
+            />
+          </div>
+          <div className={`${styles.quickAccessRow} ${styles.quickAccessRowCentered}`}>
+            <QuickActionCard
+              icon={<TrendingUp size={22} />}
+              label="Estadísticas"
+              onClick={() => navigate('/estadisticas')}
+              id="quick-stats"
+            />
+            <QuickActionCard
+              icon={<CalendarDays size={22} />}
+              label="Calendario"
+              onClick={() => navigate('/calendario')}
+              id="quick-calendar"
+            />
+            <QuickActionCard
+              icon={<FileText size={22} />}
+              label="Reportes"
+              onClick={() => navigate('/reportes')}
+              id="quick-reports"
+            />
+          </div>
         </div>
       </div>
       

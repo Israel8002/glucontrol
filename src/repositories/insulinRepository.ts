@@ -14,6 +14,8 @@ export interface CreateInsulinTypeInput {
   units: number;
   color?: string;
   notes?: string;
+  defaultTime?: string;
+  defaultSite?: string;
 }
 
 export interface CreateInsulinLogInput {
@@ -126,6 +128,19 @@ export const insulinRepository = {
     const existing = await db.insulinLogs.get(id);
     if (!existing) return;
     await db.insulinLogs.put(updateBaseRecord({ ...existing, isDeleted: true }));
+  },
+  
+  async updateLog(id: string, changes: Partial<InsulinLog>): Promise<InsulinLog> {
+    try {
+      const existing = await db.insulinLogs.get(id);
+      if (!existing) throw new DatabaseError('Registro de insulina no encontrado');
+      const updated = updateBaseRecord({ ...existing, ...changes });
+      await db.insulinLogs.put(updated);
+      return updated;
+    } catch (error) {
+      log.error('Error al actualizar registro de insulina', error);
+      throw new DatabaseError('No se pudo actualizar el registro de insulina', error);
+    }
   },
   
   async getAllLogs(): Promise<InsulinLog[]> {

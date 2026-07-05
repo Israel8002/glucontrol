@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pill, Check, X, Clock, Trash2 } from 'lucide-react';
+import { Plus, Pill, Check, X, Clock, Trash2, Pencil } from 'lucide-react';
 import { medicationRepository } from '@/repositories/medicationRepository';
 import type { Medication, MedicationLog } from '@/entities';
 import { Card } from '@/components/ui/Card/Card';
@@ -15,16 +15,16 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { PageHeader } from '@/components/ui/PageHeader/PageHeader';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { today, formatTime } from '@/utils/date';
+import { today, formatTime, formatDisplayDate } from '@/utils/date';
 import styles from './MedicationsPage.module.css';
 
 const FORM_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 const FREQUENCY_OPTIONS = [
-  { value: 'once', label: 'Una vez al día' },
-  { value: 'twice', label: 'Dos veces al día' },
-  { value: 'three', label: 'Tres veces al día' },
-  { value: 'four', label: 'Cuatro veces al día' },
+  { value: 'every_24h', label: 'Cada 24 horas' },
+  { value: 'every_12h', label: 'Cada 12 horas' },
+  { value: 'every_8h', label: 'Cada 8 horas' },
+  { value: 'every_6h', label: 'Cada 6 horas' },
   { value: 'custom', label: 'Personalizado' },
 ];
 
@@ -37,9 +37,6 @@ const FORM_OPTIONS = [
   { value: 'otro', label: 'Otro' },
 ];
 
-/**
- * Página de medicamentos: catálogo y registro de tomas diarias.
- */
 export const MedicationsPage: React.FC = () => {
   const { success, error: toastError } = useToast();
   
@@ -48,6 +45,7 @@ export const MedicationsPage: React.FC = () => {
   const [allLogs, setAllLogs] = useState<MedicationLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingMedicationId, setEditingMedicationId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
@@ -58,8 +56,10 @@ export const MedicationsPage: React.FC = () => {
   const [genericName, setGenericName] = useState('');
   const [dosage, setDosage] = useState('');
   const [form, setForm] = useState('tableta');
-  const [frequency, setFrequency] = useState('once');
+  const [frequency, setFrequency] = useState('every_24h');
+  const [scheduledTimes, setScheduledTimes] = useState<string[]>(['08:00']);
   const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [alarmEnabled, setAlarmEnabled] = useState(false);
   const [selectedColor, setSelectedColor] = useState(FORM_COLORS[0]);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -85,10 +85,40 @@ export const MedicationsPage: React.FC = () => {
   
   const resetForm = () => {
     setName(''); setGenericName(''); setDosage('');
-    setForm('tableta'); setFrequency('once');
-    setReminderEnabled(true); setSelectedColor(FORM_COLORS[0]);
+    setForm('tableta'); setFrequency('every_24h');
+    setScheduledTimes(['08:00']);
+    setReminderEnabled(true); setAlarmEnabled(false);
+    setSelectedColor(FORM_COLORS[0]);
+    setEditingMedicationId(null);
   };
   
+  const handleFrequencyChange = (val: string) => {
+    setFrequency(val);
+    if (val === 'every_6h') {
+      setScheduledTimes(['06:00', '12:00', '18:00', '00:00']);
+    } else if (val === 'every_8h') {
+      setScheduledTimes(['08:00', '16:00', '00:00']);
+    } else if (val === 'every_12h') {
+      setScheduledTimes(['08:00', '20:00']);
+    } else if (val === 'every_24h') {
+      setScheduledTimes(['08:00']);
+    }
+  };
+
+  const handleEditClick = (med: Medication) => {
+    setEditingMedicationId(med.id);
+    setName(med.name);
+    setGenericName(med.genericName || '');
+    setDosage(med.dosage);
+    setForm(med.form);
+    setFrequency(med.frequency);
+    setScheduledTimes(med.scheduledTimes || ['08:00']);
+    setReminderEnabled(med.reminderEnabled);
+    setAlarmEnabled(!!(med as any).alarmEnabled);
+    setSelectedColor(med.color ?? FORM_COLORS[0]);
+    setShowForm(true);
+  };
+
   const handleSave = async () => {
     if (!name.trim() || !dosage.trim()) {
       toastError('Nombre y dosis son requeridos');
@@ -96,8 +126,7 @@ export const MedicationsPage: React.FC = () => {
     }
     setIsSaving(true);
     try {
-      const scheduledTimes = getScheduledTimes(frequency);
-      await medicationRepository.createMedication({
+      const data = {
         name: name.trim(),
         genericName: genericName.trim() || undefined,
         dosage: dosage.trim(),
@@ -105,14 +134,22 @@ export const MedicationsPage: React.FC = () => {
         frequency,
         scheduledTimes,
         reminderEnabled,
+        alarmEnabled,
         color: selectedColor,
-      });
+      };
+
+      if (editingMedicationId) {
+        await medicationRepository.updateMedication(editingMedicationId, data);
+        success('Medicamento actualizado');
+      } else {
+        await medicationRepository.createMedication(data);
+        success('Medicamento agregado');
+      }
       await loadData();
       setShowForm(false);
       resetForm();
-      success('Medicamento agregado');
     } catch {
-      toastError('Error al guardar medicamento');
+      toastError(editingMedicationId ? 'Error al actualizar medicamento' : 'Error al guardar medicamento');
     } finally {
       setIsSaving(false);
     }
@@ -232,6 +269,13 @@ export const MedicationsPage: React.FC = () => {
                       {takenCount}/{totalDoses} dosis
                     </Badge>
                     <button
+                      className={styles.editBtn}
+                      onClick={() => handleEditClick(med)}
+                      aria-label={`Editar ${med.name}`}
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
                       className={styles.deleteBtn}
                       onClick={() => setDeleteId(med.id)}
                       aria-label={`Eliminar ${med.name}`}
@@ -318,11 +362,11 @@ export const MedicationsPage: React.FC = () => {
         </div>
       )}
       
-      {/* Modal para agregar medicamento */}
+      {/* Modal para agregar/editar medicamento */}
       <Modal
         isOpen={showForm}
         onClose={() => { setShowForm(false); resetForm(); }}
-        title="Agregar medicamento"
+        title={editingMedicationId ? 'Editar medicamento' : 'Agregar medicamento'}
         id="medication-form-modal"
       >
         <div className={styles.form}>
@@ -360,9 +404,55 @@ export const MedicationsPage: React.FC = () => {
             label="Frecuencia"
             options={FREQUENCY_OPTIONS}
             value={frequency}
-            onChange={e => setFrequency(e.target.value)}
+            onChange={e => handleFrequencyChange(e.target.value)}
             id="med-frequency"
           />
+
+          {/* Horarios programados */}
+          <div className={styles.timeSection}>
+            <label className={styles.timeLabel}>Horarios programados</label>
+            <div className={styles.timeInputsList}>
+              {scheduledTimes.map((time, idx) => (
+                <div key={idx} className={styles.timeInputRow}>
+                  <Input
+                    type="time"
+                    value={time}
+                    onChange={e => {
+                      const newTimes = [...scheduledTimes];
+                      newTimes[idx] = e.target.value;
+                      setScheduledTimes(newTimes);
+                    }}
+                    id={`med-time-${idx}`}
+                  />
+                  {frequency === 'custom' && (
+                    <button
+                      type="button"
+                      className={styles.timeRemoveBtn}
+                      onClick={() => {
+                        if (scheduledTimes.length > 1) {
+                          setScheduledTimes(scheduledTimes.filter((_, i) => i !== idx));
+                        }
+                      }}
+                      aria-label="Eliminar horario"
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            {frequency === 'custom' && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setScheduledTimes([...scheduledTimes, '12:00'])}
+                className={styles.addTimeBtn}
+              >
+                + Agregar horario
+              </Button>
+            )}
+          </div>
           
           {/* Selector de color */}
           <div className={styles.colorPicker}>
@@ -388,13 +478,21 @@ export const MedicationsPage: React.FC = () => {
             description="Recibir notificación en los horarios programados"
             id="med-reminder"
           />
+
+          <Switch
+            checked={alarmEnabled}
+            onChange={setAlarmEnabled}
+            label="Alarma de celular"
+            description="Hacer sonar alarma en el dispositivo en los horarios programados"
+            id="med-alarm"
+          />
           
           <div className={styles.formActions}>
             <Button variant="ghost" onClick={() => { setShowForm(false); resetForm(); }}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleSave} loading={isSaving} fullWidth>
-              Guardar medicamento
+              {editingMedicationId ? 'Guardar cambios' : 'Guardar medicamento'}
             </Button>
           </div>
         </div>
